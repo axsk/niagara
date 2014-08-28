@@ -1,27 +1,27 @@
-import itertools
-import random
+from copy import deepcopy
+from itertools import repeat
+from random import randrange
 
 class RandomAgent:
 	name = "Random"
 	def getMove(self, state):
 		moves = state.possibleMoves()
-		return moves[random.randrange(1,len(moves))]
-
+		return moves[randrange(1,len(moves))-1]
 
 class PlayerState:
 	bank = []
 	boat_pos = [0, 0]
 	boat_load = [None, None]
-	cards = [0, 1, 2, 3, 4, 5, 6] # 0 is weather
+	cards = [0,1,2,3,4,5,6] # 0 is weather
 	curr_card = None
 
 class State:
 	weather = 0
 	phase = 1
-	curr_player = 1
+	curr_player = 0
 
 	def __init__(self, n):
-		self.player_states = list(itertools.repeat(PlayerState(), n))
+		self.player_states = list(repeat(PlayerState(), n))
 
 	def possibleMoves(self):
 		cps = self.player_states[self.curr_player]
@@ -39,9 +39,10 @@ class State:
 
 		if self.phase == 1:
 			cps.curr_card = move
-			cps.cards.remove(move)
-		elif move>0:
+		else:
 			penalty = 0      
+			cps.cards.pop(cps.curr_card)
+
 			if 'l' in move: # load
 				cps.boat_load[1] = True
 				penalty = 2           
@@ -54,19 +55,21 @@ class State:
 				# check for steal
 			elif 'd' in move: # down
 				cps.boat_pos[1] += cps.curr_card - penalty
-		else: 
-			#weather
-			pass
 		
 		self.curr_player += 1
-		if self.curr_player > len(self.player_states):
-			self.curr_player = 1
+		if self.curr_player == len(self.player_states):
+			self.curr_player = 0
 			self.phase = self.phase % 2 + 1
 				
 	def turn(self):
 		# move boats
 		return None		
 
+	def secure(self):
+		copy = deepcopy(self)
+		for p in copy.player_states:
+			p.curr_card = None
+		return copy
 
 class Game:
 	def __init__(self, players):
@@ -74,6 +77,8 @@ class Game:
 		self.state = State(len(players))
 		while True:
 			for p in self.players:
-				self.state.move(p.getMove(self.state))
+				move = p.getMove(self.state.secure())
+				print move
+				self.state.move(move)
 
 Game([RandomAgent(), RandomAgent()]) # start game with 2 rnd players

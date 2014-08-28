@@ -8,6 +8,16 @@ class RandomAgent:
 		moves = state.possibleMoves()
 		return moves[randrange(1,len(moves))-1]
 
+class HumanPlayer:
+	def __init__(self, name):
+		self.name = name
+
+	def getMove(self, state):
+		moves = state.possibleMoves()
+		for i, m in enumerate(moves):
+			print i, m
+		return moves[input("Which move do you want to perform?")]
+
 class PlayerState:
 	bank = []
 	boat_pos = [0, 0]
@@ -35,7 +45,7 @@ class State:
 	def move(self, move):
 		cps = self.player_states[self.curr_player]
 		if not move in self.possibleMoves():
-			raise Exception('unvalid move')
+			raise Exception('invalid move')
 
 		if self.phase == 1:
 			cps.curr_card = move
@@ -70,7 +80,7 @@ class State:
 			self.phase = self.phase % 2 + 1
 				
 	def flow(self):
-		for p in self.player_states
+		for p in self.player_states:
 			p.boat_pos += self.weather
 
 	def secure(self):
@@ -89,4 +99,4 @@ class Game:
 				print move
 				self.state.move(move)
 
-Game([RandomAgent(), RandomAgent()]) # start game with 2 rnd players
+Game([RandomAgent(), HumanPlayer("Human")]) # start game with 2 rnd players

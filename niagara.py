@@ -43,6 +43,7 @@ class State:
 			penalty = 0      
 			cps.cards.pop(cps.curr_card)
 
+			# TODO: care about order ln/ud
 			if 'l' in move: # load
 				cps.boat_load[1] = True
 				penalty = 2           
@@ -55,15 +56,22 @@ class State:
 				# check for steal
 			elif 'd' in move: # down
 				cps.boat_pos[1] += cps.curr_card - penalty
+
+			if move == '+':
+				self.weather += 1
+			elif move == '-':
+				self.weather -= 1
 		
 		self.curr_player += 1
 		if self.curr_player == len(self.player_states):
 			self.curr_player = 0
+			if self.phase == 2:
+				self.flow()
 			self.phase = self.phase % 2 + 1
 				
-	def turn(self):
-		# move boats
-		return None		
+	def flow(self):
+		for p in self.player_states
+			p.boat_pos += self.weather
 
 	def secure(self):
 		copy = deepcopy(self)

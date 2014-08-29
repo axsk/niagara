@@ -1,5 +1,5 @@
 from copy import deepcopy
-from itertools import repeat
+from itertools import repeat, product
 from random import randrange
 
 class RandomAgent:
@@ -18,12 +18,26 @@ class HumanPlayer:
 			print i, m
 		return moves[input("Which move do you want to perform?")]
 
+class Boat:
+	position = 0
+	stone = False
+
 class PlayerState:
 	bank = []
-	boat_pos = [0, 0]
-	boat_load = [None, None]
+	boat = Boat()
 	cards = [0,1,2,3,4,5,6] # 0 is weather
 	curr_card = None
+
+class Move:
+	def __init__(self, dict):
+		for key in dict:
+			self.set(key,dict[key])
+
+	direction = 0
+	load = False
+	after = False
+	steal = False
+	weather = 0
 
 class State:
 	weather = 0
@@ -34,59 +48,105 @@ class State:
 		self.player_states = list(repeat(PlayerState(), n))
 
 	def possibleMoves(self):
-		cps = self.player_states[self.curr_player]
+		p = self.player_states[self.curr_player]
 		if self.phase == 1:
-			return cps.cards
+			return p.cards
 		else:
-			# TODO!!!
-			poss_moves = []
-			return poss_moves
+			moves = []
 
-	def move(self, move):
-		cps = self.player_states[self.curr_player]
+			# weather
+			if p.curr_card == 0:
+				if self.weather < 2:
+				  moves.append(Move('weather', 1))
+				if self.weather > -1:
+					moves.append(Move({'weather': -1}))
+		  # movement
+			else:
+				boat = p.boat
+				for (direction, load, after, steal) in \
+					product([1,-1], *[[True, False]]*3):
+
+					distance = (p.curr_card - 2 * load) * direction
+
+					# boat is on board
+					if boat.position:
+						if boat.load:
+							# not enough points
+							if p.curr_card < 2: continue
+							# boat wants to load but is not at bay
+							if boat.position + distance * (after) < 3: continue
+
+						if steal:
+							# not moving upwards
+							if not distance < 0: continue
+
+							# either there is a stone or its beeing loaded
+							if boat.stone ^ load: continue
+
+							victim = [p.boat for p in self.player_states if p.boat.position == boat.position + distance and p.boat.stone]
+							if victim:
+								# TODO: allow choosing victim
+								steal = victim[0]
+							else:
+							  continue
+
+						moves.append(Move({'direction': direction, 'load': load, 'after': after, 'steal': steal}))
+
+			return moves
+
+	def makeMove(self, move):
+		p = self.player_states[self.curr_player]
 		if not move in self.possibleMoves():
 			raise Exception('invalid move')
 
 		if self.phase == 1:
-			cps.curr_card = move
+			p.curr_card = move
 		else:
-			penalty = 0      
-			cps.cards.pop(cps.curr_card)
+			p.cards.pop(p.curr_card)
+			boat = p.boat
 
-			# TODO: care about order ln/ud
-			if 'l' in move: # load
-				cps.boat_load[1] = True
-				penalty = 2           
-			elif 'n' in move: # unload
-				cps.boat_load[1] = False
-				penalty = 2   
+			if move.load:
+				boat.stone = not boat.stone
+				penalty += 2
 
-			if 'u' in move: # up
-				cps.boat_pos[1] -= cps.curr_card - penalty
-				# check for steal
-			elif 'd' in move: # down
-				cps.boat_pos[1] += cps.curr_card - penalty
+			if move.direction:
+				boat.position += move.direction * (p.curr_card - 2 * move.load)
 
-			if move == '+':
-				self.weather += 1
-			elif move == '-':
-				self.weather -= 1
-		
+				if boat.position < 0: boat.position = 0
+
+				if boat.position == 0 and boat.stone:
+					p.bank.append(boat.stone)
+					boat.stone = False
+				if boat.position > 7:
+					boat.position = None
+					boat.stone = False
+
+			if move.steal:
+				boat.stone = move.steal.stone
+				move.steal.stone = False
+
+			self.weather += move.weather
+
+		# next player
 		self.curr_player += 1
 		if self.curr_player == len(self.player_states):
+			# TODO: rotate startplayer
 			self.curr_player = 0
 			if self.phase == 2:
 				self.flow()
 			self.phase = self.phase % 2 + 1
-				
+
 	def flow(self):
 		for p in self.player_states:
-			p.boat_pos += self.weather
+			p.boat.position += self.weather
 
 	def secure(self):
 		copy = deepcopy(self)
 		for p in copy.player_states:
-			p.curr_card = None
+			# TODO: here we want to remove the curr card to avoid cheating
+			# but right now it has to be known for the current player to show possible moves
+			# p.curr_card = None
+			pass
 		return copy
 
 class Game:
@@ -97,6 +157,6 @@ class Game:
 			for p in self.players:
 				move = p.getMove(self.state.secure())
 				print move
-				self.state.move(move)
+				self.state.makeMove(move)
 
 Game([RandomAgent(), HumanPlayer("Human")]) # start game with 2 rnd players

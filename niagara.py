@@ -157,11 +157,9 @@ class Game:
 
 				if boat.position < 0: boat.position = 0
 
+				# add stone to bank
 				if boat.position == 0 and boat.stone:
 					p.bank.append(boat.stone)
-					boat.stone = False
-				if boat.position > 7:
-					boat.position = None
 					boat.stone = False
 
 			if move.steal:
@@ -189,8 +187,18 @@ class Game:
 		print "round "+`self.round`+" phase "+`self.phase`+" player "+`self.curr_player+1`
 
 	def flow(self):
+		moves = [p.curr_card for p in self.players if p.curr_card]
+		flow = min(moves if moves else 0) + self.weather
+		flow = max(flow, 0)
+
+		print "flowing " + `flow`
 		for p in self.players:
-			if p.boat.position: p.boat.position += self.weather
+			# move boats
+			if p.boat.position: p.boat.position += flow
+			# sink boats
+			if p.boat.position > 7:
+				p.boat.position = None
+				p.boat.stone = False
 
 	def returnCards(self):
 		for p in self.players:

@@ -15,6 +15,8 @@ class AgentHuman:
 			print " ",i, m
 		try:
 			return moves[input(" Which move do you want to perform?")]
+		except KeyboardInterrupt:
+				raise
 		except:
 			return moves[0]
 
@@ -229,6 +231,8 @@ try:
 	game.players.append(Player("Random", AgentRandom()))
 	while not game.winners:
 		game.turn()
+except KeyboardInterrupt:
+	sys.exit()
 except:
 	tpes, value, tb = sys.exc_info()
 	traceback.print_exc()

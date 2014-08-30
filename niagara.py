@@ -1,18 +1,14 @@
 import pdb, traceback, sys
 from copy import deepcopy
-from itertools import repeat, product
+from itertools import product
 from random import randrange
 
-class RandomAgent:
-	name = "Random"
+class AgentRandom:
 	def getMove(self, state):
 		moves = state.possibleMoves()
 		return moves[randrange(1,len(moves))-1]
 
-class HumanPlayer:
-	def __init__(self, name):
-		self.name = name
-
+class AgentHuman:
 	def getMove(self, state):
 		moves = state.possibleMoves()
 		for i, m in enumerate(moves):
@@ -23,11 +19,15 @@ class Boat:
 	position = 0
 	stone = False
 
-class PlayerState:
+class Player:
 	bank = []
 	boat = Boat()
 	cards = [0,1,2,3,4,5,6] # 0 is weather
 	curr_card = None
+
+	def __init__(self, name, agent)
+		self.name = name
+		self.agent = agent
 
 class Move:
 	def __init__(self, dict):
@@ -44,17 +44,15 @@ class Move:
 	steal = False
 	weather = 0
 
-class State:
+class Game:
 	weather = 0
 	phase = 1
 	round = 1
 	curr_player = 0
-
-	def __init__(self, n):
-		self.player_states = list(repeat(PlayerState(), n))
+	players = []
 
 	def possibleMoves(self):
-		p = self.player_states[self.curr_player]
+		p = self.players[self.curr_player]
 		if self.phase == 1:
 			return p.cards
 		else:
@@ -89,7 +87,7 @@ class State:
 							# either there is a stone or its beeing loaded
 							if boat.stone ^ load: continue
 
-							victim = [p.boat for p in self.player_states if p.boat.position == boat.position + distance and p.boat.stone]
+							victim = [p.boat for p in self.players if p.boat.position == boat.position + distance and p.boat.stone]
 							if victim:
 								# TODO: allow choosing victim
 								steal = victim[0]
@@ -101,7 +99,7 @@ class State:
 			return moves
 
 	def makeMove(self, move):
-		p = self.player_states[self.curr_player]
+		p = self.players[self.curr_player]
 		if not move in self.possibleMoves():
 			raise Exception('invalid move')
 
@@ -136,7 +134,7 @@ class State:
 		self.curr_player += 1
 
 		# last player moved
-		if self.curr_player == len(self.player_states):
+		if self.curr_player == len(self.players):
 			# TODO: rotate startplayer
 			self.curr_player = 0
 			if self.phase == 1:
@@ -151,34 +149,32 @@ class State:
 		print "round "+`self.round`+" phase "+`self.phase`+" player "+`self.curr_player+1`
 
 	def flow(self):
-		for p in self.player_states:
+		for p in self.players:
 			p.boat.position += self.weather
 
 	def returnCards(self):
-		for p in self.player_states:
+		for p in self.players:
 			p.cards = [0,1,2,3,4,5,6]
 
 	def secure(self):
 		copy = deepcopy(self)
-		for p in copy.player_states:
+		for p in copy.players:
 			# TODO: here we want to remove the curr card to avoid cheating
 			# but right now it has to be known for the current player to show possible moves
 			# p.curr_card = None
+				p.agent = None
 			pass
 		return copy
 
-class Game:
-	def __init__(self, players):
-		self.players = players
-		self.state = State(len(players))
-		while True:
-			for p in self.players:
-				move = p.getMove(self.state.secure())
-				print move
-				self.state.makeMove(move)
-
 try:
-	Game([RandomAgent(), HumanPlayer("Human")]) # start game with 2 rnd players
+	state = Game()
+	state.players.append(Player("Human",  AgentHuman()))
+	state.players.append(Player("Random", AgentRandom()))
+	while True:
+		for agent in state.players.agent:
+			move = agent.getMove(state.secure())
+			print move
+			state.makeMove(move)
 except:
 	tpes, value, tb = sys.exc_info()
 	traceback.print_exc()

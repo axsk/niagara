@@ -1,7 +1,8 @@
 import pdb, traceback, sys
-from copy import deepcopy
+from copy import copy
 from itertools import product
 from random import randrange
+from Tkinter import *
 
 class AgentRandom:
 	def getMove(self, game):
@@ -9,9 +10,30 @@ class AgentRandom:
 		return moves[randrange(0,len(moves))]
 
 class AgentHuman:
+	def __init__(self):
+		# create the window
+		root = Tk()
+
+		# modify root window
+		root.title("Player")
+		root.geometry("300x300")
+
+		self.app = Frame(root)
+		self.app.grid()
+		
+		#root.mainloop()
+	
 	def getMove(self, game):
 		me = game.players[game.curr_player]
 		moves = game.possibleMoves()
+		label = Label(self.app, text = "Choose a card")
+		label.grid()
+			
+		select = Move()
+		for i in [0, 1, 2, 3, 4, 5, 6]:
+			m = Move(card = i)
+			Radiobutton(self.app, text = `i`, variable = select, value = m, state = "active" if(m in moves) else "disabled" )
+		
 		print "you are standing at "+`me.boat.position`
 		for i, m in enumerate(moves):
 			print " ",i, m
@@ -21,6 +43,7 @@ class AgentHuman:
 				raise
 		except:
 			return moves[0]
+
 
 class Boat:
 	def __init__(self):
@@ -37,9 +60,9 @@ class Player:
 		self.curr_card = None
 
 class Move:
-	def __init__(self):
+	def __init__(self, card = None):		
 		# phase 1
-		self.card = None
+		self.card = card
 		self.buyback = False
 		# phase 2
 		self.direction = None
@@ -47,6 +70,9 @@ class Move:
 		self.after = False
 		self.steal = False
 		self.weather = 0
+	
+	def phase(self):
+			return 1 if self.card != None else 2
 
 	def __str__(self):
 		if self.card != None:
@@ -220,17 +246,17 @@ class Game:
 		self.winners = [p for p in self.players if len(p.bank)]
 
 	def secure(self):
-		copy = deepcopy(self)
-		for p in copy.players: pass
+		#copy = copy(self)
+		#for p in copy.players: pass
 			# TODO: here we want to remove the curr card to avoid cheating
 			# but right now it has to be known for the current player to show possible moves
 			# p.curr_card = None
 			# p.agent = None
-		return copy
+		return copy(self)
 
 try:
 	game = Game()
-	game.players.append(Player("Random 1", AgentRandom()))
+	game.players.append(Player("Human", AgentHuman()))
 	game.players.append(Player("Random 2", AgentRandom()))
 	while not game.winners:
 		game.turn()

@@ -1,3 +1,4 @@
+import pdb, traceback, sys
 from copy import deepcopy
 from itertools import repeat, product
 from random import randrange
@@ -159,4 +160,9 @@ class Game:
 				print move
 				self.state.makeMove(move)
 
-Game([RandomAgent(), HumanPlayer("Human")]) # start game with 2 rnd players
+try:
+	Game([RandomAgent(), HumanPlayer("Human")]) # start game with 2 rnd players
+except:
+	tpes, value, tb = sys.exc_info()
+	traceback.print_exc()
+	pdb.post_mortem(tb)

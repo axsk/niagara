@@ -12,9 +12,9 @@ class AgentHuman:
 	def getMove(self, game):
 		moves = game.possibleMoves()
 		for i, m in enumerate(moves):
-			print i, m
+			print " ",i, m
 		try:
-			return moves[input("Which move do you want to perform?")]
+			return moves[input(" Which move do you want to perform?")]
 		except:
 			return moves[0]
 
@@ -48,12 +48,13 @@ class Move:
 		if self.card != None:
 			return (`self.card` if self.card>0 else "weather" +
 				("buyback" if self.buyback else "") )
+		elif self.weather:
+			return "weather " + ("+" if self.weather == 1 else "-")
 		else:
-			return ("weather " + `self.weather`) if self.weather else (
-				("up" if self.direction == 1 else "down") +
+			return (("up" if self.direction == 1 else "down") +
 				(" load" if self.load else "") +
 				(" after" if self.after else "") +
-				(" steal" if self.steal else "") )
+				(" steal" if self.steal else ""))
 
 	# let Move()==Move() be true (comparison by values)
 	def __eq__(self, other):
@@ -181,6 +182,7 @@ class Game:
 				self.endRound()
 				self.phase = 1
 
+		print "round "+`self.round`+" phase "+`self.phase`+" player "+`self.players[self.curr_player].name`
 
 		print "round "+`self.round`+" phase "+`self.phase`+" player "+`self.curr_player+1`
 
@@ -221,7 +223,7 @@ try:
 	while True:
 		for player in game.players:
 			move = player.agent.getMove(game.secure())
-			print move
+			print " " + player.name + ": ", move
 			game.makeMove(move)
 except:
 	tpes, value, tb = sys.exc_info()

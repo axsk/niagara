@@ -34,18 +34,26 @@ class Player:
 
 class Move:
 	def __init__(self):
-		self.direction = 0
+		# phase 1
+		self.card = None
+		self.buyback = False
+		# phase 2
+		self.direction = None
 		self.load = False
 		self.after = False
 		self.steal = False
 		self.weather = 0
 
 	def __str__(self):
-		return ("weather " + self.weather) if self.weather else (
-			("up" if self.direction == 1 else "down") +
-			(" load" if self.load else "") +
-			(" after" if self.after else "") +
-			(" steal" if self.steal else "") )
+		if self.card != None:
+			return (`self.card` if self.card>0 else "weather" +
+				("buyback" if self.buyback else "") )
+		else:
+			return ("weather " + `self.weather`) if self.weather else (
+				("up" if self.direction == 1 else "down") +
+				(" load" if self.load else "") +
+				(" after" if self.after else "") +
+				(" steal" if self.steal else "") )
 
 	# let Move()==Move() be true (comparison by values)
 	def __eq__(self, other):
@@ -62,7 +70,16 @@ class Game:
 	def possibleMoves(self):
 		p = self.players[self.curr_player]
 		if self.phase == 1:
-			return p.cards
+			moves = []
+			for c in p.cards:
+				move = Move()
+				move.card = c
+				# force buyback
+				if p.boat.position == None:
+					move.buyback = True
+				moves.append(move)
+			return moves
+
 		else:
 			moves = []
 
@@ -122,7 +139,12 @@ class Game:
 			raise Exception('invalid move')
 
 		if self.phase == 1:
-			p.curr_card = move
+			p.curr_card = move.card
+			if move.buyback:
+				p.boat.position = 0
+				try: a.pop()
+				except: pass
+
 		else:
 			p.cards.remove(p.curr_card)
 			boat = p.boat

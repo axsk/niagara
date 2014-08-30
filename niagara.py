@@ -178,19 +178,17 @@ class Game:
 			if self.phase == 1:
 				self.phase = 2
 			else:
-				self.flow()
+				self.endRound()
 				self.phase = 1
-				self.round += 1
-				if self.round % 7 == 1:
-					self.returnCards()
+
 
 		print "round "+`self.round`+" phase "+`self.phase`+" player "+`self.curr_player+1`
 
-	def flow(self):
+	def endRound(self):
+		# flow river
 		moves = [p.curr_card for p in self.players if p.curr_card]
 		flow = min(moves if moves else 0) + self.weather
 		flow = max(flow, 0)
-
 		print "flowing " + `flow`
 		for p in self.players:
 			# move boats
@@ -200,9 +198,12 @@ class Game:
 				p.boat.position = None
 				p.boat.stone = False
 
-	def returnCards(self):
-		for p in self.players:
-			p.cards = [0,1,2,3,4,5,6]
+		# return cards
+		if self.round % 7 == 0:
+			for p in self.players:
+				p.cards = [0,1,2,3,4,5,6]
+
+		self.round += 1
 
 	def secure(self):
 		copy = deepcopy(self)

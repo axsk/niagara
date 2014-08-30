@@ -148,6 +148,8 @@ class State:
 				if self.round % 7 == 1:
 					self.returnCards()
 
+		print "round "+`self.round`+" phase "+`self.phase`+" player "+`self.curr_player+1`
+
 	def flow(self):
 		for p in self.player_states:
 			p.boat.position += self.weather

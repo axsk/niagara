@@ -51,7 +51,7 @@ class Move:
 		elif self.weather:
 			return "weather " + ("+" if self.weather == 1 else "-")
 		else:
-			return (("up" if self.direction == 1 else "down") +
+			return (("up" if self.direction == -1 else "down") +
 				(" load" if self.load else "") +
 				(" after" if self.after else "") +
 				(" steal" if self.steal else ""))
@@ -195,7 +195,7 @@ class Game:
 	def endRound(self):
 		# flow river
 		moves = [p.curr_card for p in self.players if p.curr_card]
-		flow = min(moves if moves else 0) + self.weather
+		flow = min(moves) if moves else 0 + self.weather
 		flow = max(flow, 0)
 		print "flowing " + `flow`
 		for p in self.players:

@@ -1,9 +1,6 @@
 niagara
 =======
 
-Bugs:
-- possibleMoves() returns no moves at phase 2
-
 Todos:
 - add river bifurcation
 - add second boat

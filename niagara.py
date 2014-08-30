@@ -32,7 +32,11 @@ class PlayerState:
 class Move:
 	def __init__(self, dict):
 		for key in dict:
-			self.set(key,dict[key])
+			setattr(self, key, dict[key])
+
+	# let Move()==Move() be true (comparison by values)
+	def __eq__(self, other):
+		return self.__dict__ == other.__dict__
 
 	direction = 0
 	load = False
@@ -70,8 +74,8 @@ class State:
 					distance = (p.curr_card - 2 * load) * direction
 
 					# boat is on board
-					if boat.position:
-						if boat.load:
+					if boat.position != None:
+						if boat.stone:
 							# not enough points
 							if p.curr_card < 2: continue
 							# boat wants to load but is not at bay
@@ -108,7 +112,6 @@ class State:
 
 			if move.load:
 				boat.stone = not boat.stone
-				penalty += 2
 
 			if move.direction:
 				boat.position += move.direction * (p.curr_card - 2 * move.load)

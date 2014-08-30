@@ -10,7 +10,9 @@ class AgentRandom:
 
 class AgentHuman:
 	def getMove(self, game):
+		me = game.players[game.curr_player]
 		moves = game.possibleMoves()
+		print "you are standing at "+`me.boat.position`
 		for i, m in enumerate(moves):
 			print " ",i, m
 		try:
@@ -200,6 +202,7 @@ class Game:
 		flow = min(moves) if moves else 0 + self.weather
 		flow = max(flow, 0)
 		print "flowing " + `flow`
+		print ""
 		for p in self.players:
 			# move boats
 			if p.boat.position: p.boat.position += flow
@@ -214,7 +217,7 @@ class Game:
 				p.cards = [0,1,2,3,4,5,6]
 
 		# determine winners
-		winners = [p for p in self.players if len(p.bank)]
+		self.winners = [p for p in self.players if len(p.bank)]
 
 	def secure(self):
 		copy = deepcopy(self)
@@ -227,10 +230,11 @@ class Game:
 
 try:
 	game = Game()
-	game.players.append(Player("Human", AgentHuman()))
-	game.players.append(Player("Random", AgentRandom()))
+	game.players.append(Player("Random 1", AgentRandom()))
+	game.players.append(Player("Random 2", AgentRandom()))
 	while not game.winners:
 		game.turn()
+	print game.winners[0].name
 except KeyboardInterrupt:
 	sys.exit()
 except:

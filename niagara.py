@@ -47,6 +47,7 @@ class Move:
 class State:
 	weather = 0
 	phase = 1
+	round = 1
 	curr_player = 0
 
 	def __init__(self, n):
@@ -133,16 +134,27 @@ class State:
 
 		# next player
 		self.curr_player += 1
+
+		# last player moved
 		if self.curr_player == len(self.player_states):
 			# TODO: rotate startplayer
 			self.curr_player = 0
-			if self.phase == 2:
+			if self.phase == 1:
+				self.phase = 2
+			else:
 				self.flow()
-			self.phase = self.phase % 2 + 1
+				self.phase = 1
+				self.round += 1
+				if self.round % 7 == 1:
+					self.returnCards()
 
 	def flow(self):
 		for p in self.player_states:
 			p.boat.position += self.weather
+
+	def returnCards(self):
+		for p in self.player_states:
+			p.cards = [0,1,2,3,4,5,6]
 
 	def secure(self):
 		copy = deepcopy(self)

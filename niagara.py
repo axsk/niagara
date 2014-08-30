@@ -67,6 +67,7 @@ class Game:
 		self.round = 1
 		self.curr_player = 0
 		self.players = []
+		self.winners = []
 
 	def possibleMoves(self):
 		p = self.players[self.curr_player]
@@ -210,6 +211,9 @@ class Game:
 			for p in self.players:
 				p.cards = [0,1,2,3,4,5,6]
 
+		# determine winners
+		winners = [p for p in self.players if len(p.bank)]
+
 	def secure(self):
 		copy = deepcopy(self)
 		for p in copy.players: pass
@@ -223,7 +227,7 @@ try:
 	game = Game()
 	game.players.append(Player("Human", AgentHuman()))
 	game.players.append(Player("Random", AgentRandom()))
-	while True:
+	while not game.winners:
 		game.turn()
 except:
 	tpes, value, tb = sys.exc_info()

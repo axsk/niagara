@@ -4,13 +4,13 @@ from itertools import product
 from random import randrange
 
 class AgentRandom:
-	def getMove(self, state):
-		moves = state.possibleMoves()
+	def getMove(self, game):
+		moves = game.possibleMoves()
 		return moves[randrange(1,len(moves))-1]
 
 class AgentHuman:
-	def getMove(self, state):
-		moves = state.possibleMoves()
+	def getMove(self, game):
+		moves = game.possibleMoves()
 		for i, m in enumerate(moves):
 			print i, m
 		return moves[input("Which move do you want to perform?")]
@@ -25,7 +25,7 @@ class Player:
 	cards = [0,1,2,3,4,5,6] # 0 is weather
 	curr_card = None
 
-	def __init__(self, name, agent)
+	def __init__(self, name, agent):
 		self.name = name
 		self.agent = agent
 
@@ -106,7 +106,8 @@ class Game:
 		if self.phase == 1:
 			p.curr_card = move
 		else:
-			p.cards.pop(p.curr_card)
+			pdb.set_trace()
+			p.cards.remove(p.curr_card)
 			boat = p.boat
 
 			if move.load:
@@ -158,23 +159,22 @@ class Game:
 
 	def secure(self):
 		copy = deepcopy(self)
-		for p in copy.players:
+		for p in copy.players: pass
 			# TODO: here we want to remove the curr card to avoid cheating
 			# but right now it has to be known for the current player to show possible moves
 			# p.curr_card = None
-				p.agent = None
-			pass
+			# p.agent = None
 		return copy
 
 try:
-	state = Game()
-	state.players.append(Player("Human",  AgentHuman()))
-	state.players.append(Player("Random", AgentRandom()))
+	game = Game()
+	game.players.append(Player("Human",  AgentHuman()))
+	game.players.append(Player("Random", AgentHuman()))
 	while True:
-		for agent in state.players.agent:
-			move = agent.getMove(state.secure())
+		for player in game.players:
+			move = player.agent.getMove(game.secure())
 			print move
-			state.makeMove(move)
+			game.makeMove(move)
 except:
 	tpes, value, tb = sys.exc_info()
 	traceback.print_exc()

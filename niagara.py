@@ -16,40 +16,38 @@ class AgentHuman:
 		return moves[input("Which move do you want to perform?")]
 
 class Boat:
-	position = 0
-	stone = False
+	def __init__(self):
+		self.position = 0
+		self.stone = False
 
 class Player:
-	bank = []
-	boat = Boat()
-	cards = [0,1,2,3,4,5,6] # 0 is weather
-	curr_card = None
-
 	def __init__(self, name, agent):
 		self.name = name
 		self.agent = agent
+		self.bank = []
+		self.boat = Boat()
+		self.cards = [0,1,2,3,4,5,6] # 0 is weather
+		self.curr_card = None
 
 class Move:
-	def __init__(self, dict):
-		for key in dict:
-			setattr(self, key, dict[key])
+	def __init__(self):
+		self.direction = 0
+		self.load = False
+		self.after = False
+		self.steal = False
+		self.weather = 0
 
 	# let Move()==Move() be true (comparison by values)
 	def __eq__(self, other):
 		return self.__dict__ == other.__dict__
 
-	direction = 0
-	load = False
-	after = False
-	steal = False
-	weather = 0
-
 class Game:
-	weather = 0
-	phase = 1
-	round = 1
-	curr_player = 0
-	players = []
+	def __init__(self):
+		self.weather = 0
+		self.phase = 1
+		self.round = 1
+		self.curr_player = 0
+		self.players = []
 
 	def possibleMoves(self):
 		p = self.players[self.curr_player]
@@ -61,10 +59,14 @@ class Game:
 			# weather
 			if p.curr_card == 0:
 				if self.weather < 2:
-				  moves.append(Move('weather', 1))
+					move = Move()
+					move.weather = 1
+					moves.append(move)
 				if self.weather > -1:
-					moves.append(Move({'weather': -1}))
-		  # movement
+					move = Move()
+					move.weather = -1
+					moves.append(move)
+			# movement
 			else:
 				boat = p.boat
 				for (direction, load, after, steal) in \
@@ -92,9 +94,13 @@ class Game:
 								# TODO: allow choosing victim
 								steal = victim[0]
 							else:
-							  continue
-
-						moves.append(Move({'direction': direction, 'load': load, 'after': after, 'steal': steal}))
+								continue
+						move = Move()
+						move.direction = direction
+						move.load = load
+						move.after = after
+						move.steal = steal
+						moves.append(move)
 
 			return moves
 
@@ -106,7 +112,6 @@ class Game:
 		if self.phase == 1:
 			p.curr_card = move
 		else:
-			pdb.set_trace()
 			p.cards.remove(p.curr_card)
 			boat = p.boat
 
@@ -168,7 +173,7 @@ class Game:
 
 try:
 	game = Game()
-	game.players.append(Player("Human",  AgentHuman()))
+	game.players.append(Player("Human", AgentHuman()))
 	game.players.append(Player("Random", AgentHuman()))
 	while True:
 		for player in game.players:

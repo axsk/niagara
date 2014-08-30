@@ -37,6 +37,13 @@ class Move:
 		self.steal = False
 		self.weather = 0
 
+	def __str__(self):
+		return ("weather " + self.weather) if self.weather else (
+			("up" if self.direction == 1 else "down") +
+			(" load" if self.load else "") +
+			(" after" if self.after else "") +
+			(" steal" if self.steal else "") )
+
 	# let Move()==Move() be true (comparison by values)
 	def __eq__(self, other):
 		return self.__dict__ == other.__dict__

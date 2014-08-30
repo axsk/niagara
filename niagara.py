@@ -134,10 +134,13 @@ class Game:
 
 			return moves
 
-	def makeMove(self, move):
+	def turn(self):
 		p = self.players[self.curr_player]
+		move = p.agent.getMove(game.secure())
 		if not move in self.possibleMoves():
 			raise Exception('invalid move')
+
+		print "moving " + p.name + ": ", move
 
 		if self.phase == 1:
 			p.curr_card = move.card
@@ -171,20 +174,22 @@ class Game:
 
 		# next player
 		self.curr_player += 1
+		self.curr_player = self.curr_player % len(self.players)
 
 		# last player moved
-		if self.curr_player == len(self.players):
-			# TODO: rotate startplayer
-			self.curr_player = 0
+		if self.curr_player == self.ring():
 			if self.phase == 1:
 				self.phase = 2
 			else:
 				self.endRound()
 				self.phase = 1
+				self.round += 1
+				self.curr_player = self.ring()
 
 		print "round "+`self.round`+" phase "+`self.phase`+" player "+`self.players[self.curr_player].name`
 
-		print "round "+`self.round`+" phase "+`self.phase`+" player "+`self.curr_player+1`
+	def ring(self):
+		return (self.round - 1) % len(self.players)
 
 	def endRound(self):
 		# flow river
@@ -205,8 +210,6 @@ class Game:
 			for p in self.players:
 				p.cards = [0,1,2,3,4,5,6]
 
-		self.round += 1
-
 	def secure(self):
 		copy = deepcopy(self)
 		for p in copy.players: pass
@@ -221,10 +224,7 @@ try:
 	game.players.append(Player("Human", AgentHuman()))
 	game.players.append(Player("Random", AgentRandom()))
 	while True:
-		for player in game.players:
-			move = player.agent.getMove(game.secure())
-			print " " + player.name + ": ", move
-			game.makeMove(move)
+		game.turn()
 except:
 	tpes, value, tb = sys.exc_info()
 	traceback.print_exc()

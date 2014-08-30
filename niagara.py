@@ -13,7 +13,10 @@ class AgentHuman:
 		moves = game.possibleMoves()
 		for i, m in enumerate(moves):
 			print i, m
-		return moves[input("Which move do you want to perform?")]
+		try:
+			return moves[input("Which move do you want to perform?")]
+		except:
+			return moves[0]
 
 class Boat:
 	def __init__(self):

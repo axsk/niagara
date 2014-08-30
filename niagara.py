@@ -83,11 +83,13 @@ class Game:
 
 					# boat is on board
 					if boat.position != None:
-						if boat.stone:
+						if load:
 							# not enough points
 							if p.curr_card < 2: continue
 							# boat wants to load but is not at bay
 							if boat.position + distance * (after) < 3: continue
+						else:
+							if after: continue
 
 						if steal:
 							# not moving upwards
@@ -163,7 +165,7 @@ class Game:
 
 	def flow(self):
 		for p in self.players:
-			p.boat.position += self.weather
+			if p.boat.position: p.boat.position += self.weather
 
 	def returnCards(self):
 		for p in self.players:

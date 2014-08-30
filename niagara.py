@@ -6,7 +6,7 @@ from random import randrange
 class AgentRandom:
 	def getMove(self, game):
 		moves = game.possibleMoves()
-		return moves[randrange(1,len(moves))-1]
+		return moves[randrange(0,len(moves))]
 
 class AgentHuman:
 	def getMove(self, game):
@@ -186,7 +186,7 @@ class Game:
 try:
 	game = Game()
 	game.players.append(Player("Human", AgentHuman()))
-	game.players.append(Player("Random", AgentHuman()))
+	game.players.append(Player("Random", AgentRandom()))
 	while True:
 		for player in game.players:
 			move = player.agent.getMove(game.secure())

@@ -181,32 +181,28 @@ class Game:
 
 			self.weather += move.weather
 
-		# next player
-		self.curr_player += 1
-		self.curr_player = self.curr_player % len(self.players)
-
-		# last player moved
-		if self.curr_player == self.ring():
-			if self.phase == 1:
-				self.phase = 2
-			else:
-				self.endRound()
-				self.printState()
-				self.phase = 1
-				self.round += 1
-				self.curr_player = self.ring()
+		self.curr_player = (self.curr_player + 1) % len(self.players)
 
 	def ring(self):
 		return (self.round - 1) % len(self.players)
 
-	def endRound(self):
-		# flow river
+	def playRound(self):
+
+		self.printState()
+
+		for i in [1, 2]:
+			self.phase = i
+			for j in range(0,len(self.players)):
+				self.turn()
+
+		# compute flow
 		moves = [p.curr_card for p in self.players if p.curr_card]
 		flow = min(moves) if moves else 0 + self.weather
 		flow = max(flow, 0)
 		print "flowing " + `flow`
+
+		# move boats
 		for p in self.players:
-			# move boats
 			if p.boat.position: p.boat.position += flow
 			# sink boats
 			if p.boat.position > 7:
@@ -221,6 +217,10 @@ class Game:
 
 		# determine winners
 		self.winners = [p for p in self.players if len(p.bank)]
+
+		# prepare next round
+		self.round += 1
+		self.curr_player = self.ring()
 
 	def printState(self):
 	# underline player if he has a stone
@@ -250,7 +250,7 @@ try:
 	game.players.append(Player("P1", AgentRandom()))
 	game.players.append(Player("P2", AgentRandom()))
 	while not game.winners:
-		game.turn()
+		game.playRound()
 	print game.winners[0].name + " won"
 except KeyboardInterrupt:
 	sys.exit()

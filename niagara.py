@@ -12,11 +12,11 @@ class AgentHuman:
 	def getMove(self, game):
 		me = game.players[game.curr_player]
 		moves = game.possibleMoves()
-		print "you are standing at "+`me.boat.position`
+		print 'choose a move'
 		for i, m in enumerate(moves):
-			print " ",i, m
+			print "",i, m
 		try:
-			return moves[input(" Which move do you want to perform?")]
+			return moves[input('^')]
 		except KeyboardInterrupt:
 				raise
 		except:
@@ -153,6 +153,7 @@ class Game:
 				p.boat.position = 0
 				try: a.pop()
 				except: pass
+				print p.name + " bought back"
 
 		else:
 			p.cards.remove(p.curr_card)
@@ -160,6 +161,7 @@ class Game:
 
 			if move.load:
 				boat.stone = not boat.stone
+				print p.name + ( " " if boat.stone else " un" ) + "loaded a stone"
 
 			if move.direction:
 				boat.position += move.direction * (p.curr_card - 2 * move.load)
@@ -170,10 +172,12 @@ class Game:
 				if boat.position == 0 and boat.stone:
 					p.bank.append(boat.stone)
 					boat.stone = False
+					print p.name + ' got a stone'
 
 			if move.steal:
 				boat.stone = move.steal.stone
 				move.steal.stone = False
+				print p.name + ' stole a stone'
 
 			self.weather += move.weather
 
@@ -187,6 +191,7 @@ class Game:
 				self.phase = 2
 			else:
 				self.endRound()
+				self.printState()
 				self.phase = 1
 				self.round += 1
 				self.curr_player = self.ring()
@@ -200,9 +205,6 @@ class Game:
 		flow = min(moves) if moves else 0 + self.weather
 		flow = max(flow, 0)
 		print "flowing " + `flow`
-		print ""
-		self.printState()
-		print ''
 		for p in self.players:
 			# move boats
 			if p.boat.position: p.boat.position += flow
@@ -210,6 +212,7 @@ class Game:
 			if p.boat.position > 7:
 				p.boat.position = None
 				p.boat.stone = False
+				print p.name + " fell down"
 
 		# return cards
 		if self.round % 7 == 0:
@@ -226,10 +229,12 @@ class Game:
 		text = ''
 		for bay in range(0,8):
 			baytext = [markstone(`i+1`, p)
-				for i, p in enumerate (self.players) 
+				for i, p in enumerate (self.players)
 				if p.boat.position == bay]
-			text += ''.join(baytext if baytext else 'o') + ' ' 
+			text += ''.join(baytext if baytext else 'o') + ' '
+		print ''
 		print text + '(~' + `self.weather` + '~)'
+		print ''
 
 	def secure(self):
 		copy = deepcopy(self)
@@ -242,8 +247,8 @@ class Game:
 
 try:
 	game = Game()
-	game.players.append(Player("Random 1", AgentRandom()))
-	game.players.append(Player("Random 2", AgentRandom()))
+	game.players.append(Player("P1", AgentRandom()))
+	game.players.append(Player("P2", AgentRandom()))
 	while not game.winners:
 		game.turn()
 	print game.winners[0].name + " won"

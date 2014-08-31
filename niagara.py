@@ -1,16 +1,14 @@
 import pdb, traceback, sys
 from copy import deepcopy
 from itertools import product
-from random import randrange
+from random import choice
 
 class AgentRandom:
 	def getMove(self, game):
-		moves = game.possibleMoves()
-		return moves[randrange(0,len(moves))]
+		return choice(game.possibleMoves())
 
 class AgentHuman:
 	def getMove(self, game):
-		me = game.players[game.curr_player]
 		moves = game.possibleMoves()
 		print 'choose a move'
 		for i, m in enumerate(moves):
@@ -141,7 +139,7 @@ class Game:
 
 	def turn(self):
 		p = self.players[self.curr_player]
-		move = p.agent.getMove(game.secure())
+		move = p.agent.getMove(self.secure())
 		if not move in self.possibleMoves():
 			raise Exception('invalid move')
 
@@ -216,7 +214,7 @@ class Game:
 				p.cards = [0,1,2,3,4,5,6]
 
 		# determine winners
-		self.winners = [p for p in self.players if len(p.bank)]
+		self.winners = [p for p in self.players if len(p.bank) == 2]
 
 		# prepare next round
 		self.round += 1
@@ -247,11 +245,12 @@ class Game:
 
 try:
 	game = Game()
-	game.players.append(Player("P1", AgentRandom()))
+	from agentsa import AgentDet
+	game.players.append(Player("P1", AgentDet()))
 	game.players.append(Player("P2", AgentRandom()))
 	while not game.winners:
 		game.playRound()
-	print game.winners[0].name + " won"
+	print game.winners[0].name + " after " + `game.round` + " rounds"
 except KeyboardInterrupt:
 	sys.exit()
 except:

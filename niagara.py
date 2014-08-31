@@ -145,7 +145,7 @@ class Game:
 		if not move in self.possibleMoves():
 			raise Exception('invalid move')
 
-		print "moving " + p.name + ": ", move
+		print p.name + ": ", move
 
 		if self.phase == 1:
 			p.curr_card = move.card
@@ -191,8 +191,6 @@ class Game:
 				self.round += 1
 				self.curr_player = self.ring()
 
-		print "round "+`self.round`+" phase "+`self.phase`+" player "+`self.players[self.curr_player].name`
-
 	def ring(self):
 		return (self.round - 1) % len(self.players)
 
@@ -203,6 +201,8 @@ class Game:
 		flow = max(flow, 0)
 		print "flowing " + `flow`
 		print ""
+		self.printState()
+		print ''
 		for p in self.players:
 			# move boats
 			if p.boat.position: p.boat.position += flow
@@ -219,6 +219,18 @@ class Game:
 		# determine winners
 		self.winners = [p for p in self.players if len(p.bank)]
 
+	def printState(self):
+	# underline player if he has a stone
+		def markstone(str, player):
+			return '\033[4m' + str + '\033[0m' if p.boat.stone else str
+		text = ''
+		for bay in range(0,8):
+			baytext = [markstone(`i+1`, p)
+				for i, p in enumerate (self.players) 
+				if p.boat.position == bay]
+			text += ''.join(baytext if baytext else 'o') + ' ' 
+		print text + '(~' + `self.weather` + '~)'
+
 	def secure(self):
 		copy = deepcopy(self)
 		for p in copy.players: pass
@@ -234,7 +246,7 @@ try:
 	game.players.append(Player("Random 2", AgentRandom()))
 	while not game.winners:
 		game.turn()
-	print game.winners[0].name
+	print game.winners[0].name + " won"
 except KeyboardInterrupt:
 	sys.exit()
 except:

@@ -2,7 +2,7 @@ from niagara import Game, Player, AgentRandom
 from agenta import AgentDet
 from itertools import combinations
 
-agents = [AgentRandom(), AgentDet()]
+agents = [AgentDet(), AgentDet()]
 
 repeats = 100
 

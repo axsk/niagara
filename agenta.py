@@ -7,19 +7,22 @@ class AgentDet:
         self.name = "Det"
 
     def getMove(self, g):
-        mvs = g.possibleMoves()
+        moves = g.possibleMoves()
         me  = g.players[g.curr_player]
-        boat = me.boats[0]
+        cmb = []
         if g.phase == 2:
-            if boat.stone:
-                return choice(filterMoves(mvs, [('direction', -1) , ('load', False)]))
-            else:
-                f = filterMoves(mvs, [('load', True), ('direction', -1)], strict=True)
-                if f:
-                    return choice(f)
+            for i in range(0,2):
+                boat = me.boats[i]
+                mvs = moves[0]
+                if boat.stone:
+                    cmb.append(choice(filterMoves(mvs, [('direction', -1) , ('load', False)])))
                 else:
-                    return choice(filterMoves(mvs, ('direction', 1)))
-        
+                    f = filterMoves(mvs, [('load', True), ('direction', -1)], strict=True)
+                    if f:
+                        cmb.append(choice(f))
+                    else:
+                        cmb.append(choice(filterMoves(mvs, ('direction', 1))))
+            return cmb 
         return choice(g.possibleMoves())
 
 def filterMoves(ms, f, strict = False):

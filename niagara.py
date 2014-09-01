@@ -60,19 +60,20 @@ class Move:
 
 	# let Move()==Move() be true (comparison by values)
 	def __eq__(self, other):
-		return self.__dict__ == other.__dict__
+		return self.__str__() == other.__str__()
 
 class Game:
-	def __init__(self):
+	def __init__(self, players = []):
 		self.weather = 0
 		self.phase = 1
 		self.round = 1
 		self.curr_player = 0
-		self.players = []
+		self.players = players
 		self.winners = []
 
 	def possibleMoves(self):
 		p = self.players[self.curr_player]
+		# phase 1
 		if self.phase == 1:
 			moves = []
 			for c in p.cards:
@@ -82,11 +83,13 @@ class Game:
 				if p.boat.position == None:
 					move.buyback = True
 				moves.append(move)
+			
+			if not len(moves): 
+				pdb.set_trace()
 			return moves
-
+		# phase 2
 		else:
 			moves = []
-
 			# weather
 			if p.curr_card == 0:
 				if self.weather < 2:
@@ -134,7 +137,6 @@ class Game:
 						move.after = after
 						move.steal = steal
 						moves.append(move)
-
 			return moves
 
 	def turn(self):
@@ -243,17 +245,15 @@ class Game:
 			# p.agent = None
 		return copy
 
-try:
-	game = Game()
-	from agentsa import AgentDet
-	game.players.append(Player("P1", AgentDet()))
-	game.players.append(Player("P2", AgentRandom()))
-	while not game.winners:
-		game.playRound()
-	print game.winners[0].name + " after " + `game.round` + " rounds"
-except KeyboardInterrupt:
-	sys.exit()
-except:
-	tpes, value, tb = sys.exc_info()
-	traceback.print_exc()
-	pdb.post_mortem(tb)
+	def run(self):
+			while not self.winners:
+				try:
+					self.playRound()
+				except KeyboardInterrupt:
+					sys.exit()
+				except:
+					types, value, tb = sys.exc_info()
+					traceback.print_exc()
+					pdb.post_mortem(tb)
+			print self.winners[0].name + " won after " + `self.round` + " rounds"
+			return self

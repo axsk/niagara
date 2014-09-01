@@ -26,4 +26,4 @@ def filterMoves(ms, f, strict = False):
 	else:
 		q = [ms]
 		q.extend(f)
-		return reduce(lambda ms, f: filterMoves(ms, f, fallback), q)
+		return reduce(lambda ms, f: filterMoves(ms, f, strict), q)

@@ -20,7 +20,7 @@ class AgentHuman:
         try:
             return moves[input('^')]
         except KeyboardInterrupt:
-                raise
+            raise
         except:
             return moves[0]
 
@@ -38,7 +38,7 @@ class Player:
         self.curr_card = None
 
 class Move:
-    def __init__(self, card=None, buyback=None):
+    def __init__(self, card=None, buyback=0):
         # phase 1
         self.card = card
         self.buyback = buyback
@@ -77,15 +77,15 @@ class Game:
             self.players[-1].id = len(self.players)
         self.winners = []
 
-   sunkboats def sunkboats(self)
-        return [boat for boat in p.boats if boat.position == None]
+    def sunkboats(self, player):
+        return [boat for boat in player.boats if boat.position == None]
 
     def possibleMoves(self):
         p = self.players[self.curr_player]
         # phase 1
         if self.phase == 1:
             moves = []
-            nsb = len(self.sunkboats())
+            nsb = len(self.sunkboats(p))
             for c in p.cards:
                 if nsb == 0:
                     moves.append(Move(card=c))
@@ -164,7 +164,7 @@ class Game:
         boat = p.boats[0]
         if self.phase == 1:
             p.curr_card = move.card
-            sb = self.sunkboats()
+            sb = self.sunkboats(p)
             for i in range(0,move.buyback):
                 sb[i].position = 0
                 if len(p.bank): p.bank.pop()

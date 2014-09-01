@@ -164,10 +164,10 @@ class Game:
         boat = p.boats[0]
         if self.phase == 1:
             p.curr_card = move.card
-            if move.buyback:
-                boat.position = 0
-                try: a.pop()
-                except: pass
+            sb = self.sunkboats()
+            for i in range(0,move.buyback):
+                sb[i].position = 0
+                if len(p.bank): p.bank.pop()
                 print p.agent.name + " bought back"
 
         else:

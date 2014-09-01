@@ -4,10 +4,14 @@ from itertools import product
 from random import choice
 
 class AgentRandom:
+	def __init__(self):
+		self.name = "Random"
 	def getMove(self, game):
 		return choice(game.possibleMoves())
 
 class AgentHuman:
+	def __init__(self):
+		self.name = input("What is your name?")
 	def getMove(self, game):
 		moves = game.possibleMoves()
 		print 'choose a move'
@@ -26,8 +30,7 @@ class Boat:
 		self.stone = False
 
 class Player:
-	def __init__(self, name, agent):
-		self.name = name
+	def __init__(self, agent):
 		self.agent = agent
 		self.bank = []
 		self.boat = Boat()
@@ -63,12 +66,12 @@ class Move:
 		return self.__str__() == other.__str__()
 
 class Game:
-	def __init__(self, players = []):
+	def __init__(self, agents):
 		self.weather = 0
 		self.phase = 1
 		self.round = 1
 		self.curr_player = 0
-		self.players = players
+		self.players = [Player(agent) for agent in agents]
 		self.winners = []
 
 	def possibleMoves(self):
@@ -145,7 +148,7 @@ class Game:
 		if not move in self.possibleMoves():
 			raise Exception('invalid move')
 
-		print p.name + ": ", move
+		print p.agent.name + ": ", move
 
 		if self.phase == 1:
 			p.curr_card = move.card
@@ -153,7 +156,7 @@ class Game:
 				p.boat.position = 0
 				try: a.pop()
 				except: pass
-				print p.name + " bought back"
+				print p.agent.name + " bought back"
 
 		else:
 			p.cards.remove(p.curr_card)
@@ -161,7 +164,7 @@ class Game:
 
 			if move.load:
 				boat.stone = not boat.stone
-				print p.name + ( " " if boat.stone else " un" ) + "loaded a stone"
+				print p.agent.name + ( " " if boat.stone else " un" ) + "loaded a stone"
 
 			if move.direction:
 				boat.position += move.direction * (p.curr_card - 2 * move.load)
@@ -172,12 +175,12 @@ class Game:
 				if boat.position == 0 and boat.stone:
 					p.bank.append(boat.stone)
 					boat.stone = False
-					print p.name + ' got a stone'
+					print p.agent.name + ' got a stone'
 
 			if move.steal:
 				boat.stone = move.steal.stone
 				move.steal.stone = False
-				print p.name + ' stole a stone'
+				print p.agent.name + ' stole a stone'
 
 			self.weather += move.weather
 
@@ -208,7 +211,7 @@ class Game:
 			if p.boat.position > 7:
 				p.boat.position = None
 				p.boat.stone = False
-				print p.name + " fell down"
+				print p.agent.name + " fell down"
 
 		# return cards
 		if self.round % 7 == 0:
@@ -255,5 +258,5 @@ class Game:
 					types, value, tb = sys.exc_info()
 					traceback.print_exc()
 					pdb.post_mortem(tb)
-			print self.winners[0].name + " won after " + `self.round` + " rounds"
+			print self.winners[0].agent.name + " won after " + `self.round` + " rounds"
 			return self

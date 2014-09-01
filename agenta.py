@@ -3,6 +3,9 @@ import pdb
 from random import choice
 
 class AgentDet:
+	def __init__(self):
+		self.name = "Det"
+
 	def getMove(self, g):
 		mvs = g.possibleMoves()
 		me  = g.players[g.curr_player]

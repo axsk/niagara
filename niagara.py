@@ -38,10 +38,10 @@ class Player:
         self.curr_card = None
 
 class Move:
-    def __init__(self):
+    def __init__(self, card=None, buyback=None):
         # phase 1
-        self.card = None
-        self.buyback = False
+        self.card = card
+        self.buyback = buyback
         # phase 2
         self.direction = None
         self.load = False
@@ -77,25 +77,31 @@ class Game:
             self.players[-1].id = len(self.players)
         self.winners = []
 
+   sunkboats def sunkboats(self)
+        return [boat for boat in p.boats if boat.position == None]
+
     def possibleMoves(self):
         p = self.players[self.curr_player]
-        boat = p.boats[0]
         # phase 1
         if self.phase == 1:
             moves = []
+            nsb = len(self.sunkboats())
             for c in p.cards:
-                move = Move()
-                move.card = c
-                # force buyback
-                if boat.position == None:
-                    move.buyback = True
-                moves.append(move)
-            
-            if not len(moves): 
-                pdb.set_trace()
+                if nsb == 0:
+                    moves.append(Move(card=c))
+                elif nsb == 1:
+                    moves.append(Move(card=c))
+                    if len(p.bank):
+                        moves.append(Move(card=c, buyback=1))
+                elif sunkboats == 2:
+                    moves.append(Move(card=c, buyback=1))
+                    if len(p.bank):
+                        moves.append(Move(card=c, buyback=2))
             return moves
+
         # phase 2
         else:
+            boat = p.boats[0]
             moves = []
             # weather
             if p.curr_card == 0:

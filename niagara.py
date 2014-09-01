@@ -156,12 +156,16 @@ class Game:
     def turn(self):
         p = self.players[self.curr_player]
         move = p.agent.getMove(self.secure())
-        if not move in self.possibleMoves():
-            raise Exception('invalid move')
+        if type(move) == list:
+            for mv, pos in zip(move, self.possibleMoves()):
+                if not (mv in pos or mv in move): 
+                    raise Exception('invalid move')
+        else:
+            if not move in self.possibleMoves():
+                raise Exception('invalid move')
 
         print p.agent.name + ": ", move
 
-        boat = p.boats[0]
         if self.phase == 1:
             p.curr_card = move.card
             sb = self.sunkboats(p)
@@ -171,28 +175,30 @@ class Game:
                 print p.agent.name + " bought back"
 
         else:
+            moves = move
+            self.weather += move[0].weather
             p.cards.remove(p.curr_card)
-            if move.load:
-                boat.stone = not boat.stone
-                print p.agent.name + ( " " if boat.stone else " un" ) + "loaded a stone"
+            for move, boat in zip(moves, p.boats):
+                if move.load:
+                    boat.stone = not boat.stone
+                    print p.agent.name + ( " " if boat.stone else " un" ) + "loaded a stone"
 
-            if move.direction:
-                boat.position += move.direction * (p.curr_card - 2 * move.load)
+                if move.direction:
+                    boat.position += move.direction * (p.curr_card - 2 * move.load)
 
-                if boat.position < 0: boat.position = 0
+                    if boat.position < 0: boat.position = 0
 
-                # add stone to bank
-                if boat.position == 0 and boat.stone:
-                    p.bank.append(boat.stone)
-                    boat.stone = False
-                    print p.agent.name + ' got a stone'
+                    # add stone to bank
+                    if boat.position == 0 and boat.stone:
+                        p.bank.append(boat.stone)
+                        boat.stone = False
+                        print p.agent.name + ' got a stone'
 
-            if move.steal:
-                boat.stone = move.steal.stone
-                move.steal.stone = False
-                print p.agent.name + ' stole a stone'
+                if move.steal:
+                    boat.stone = move.steal.stone
+                    move.steal.stone = False
+                    print p.agent.name + ' stole a stone'
 
-            self.weather += move.weather
 
         self.curr_player = (self.curr_player + 1) % len(self.players)
 

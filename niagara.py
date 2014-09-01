@@ -101,55 +101,57 @@ class Game:
 
         # phase 2
         else:
-            boat = p.boats[0]
-            moves = []
-            # weather
-            if p.curr_card == 0:
-                if self.weather < 2:
-                    move = Move()
-                    move.weather = 1
-                    moves.append(move)
-                if self.weather > -1:
-                    move = Move()
-                    move.weather = -1
-                    moves.append(move)
-            # movement
-            else:
-                for (direction, load, after, steal) in \
-                    product([1,-1], *[[True, False]]*3):
-
-                    distance = (p.curr_card - 2 * load) * direction
-
-                    # boat is on board
-                    if boat.position != None:
-                        if load:
-                            # not enough points
-                            if p.curr_card < 2: continue
-                            # boat wants to load but is not at bay
-                            if boat.position + distance * (after) < 3: continue
-                        else:
-                            if after: continue
-
-                        if steal:
-                            # not moving upwards
-                            if not distance < 0: continue
-
-                            # either there is a stone or its beeing loaded
-                            if boat.stone ^ load: continue
-
-                            victim = [vboat for vboat in p.boats for p in self.players if vboat.position == boat.position + distance and vboat.stone]
-                            if victim:
-                                # TODO: allow choosing victim
-                                steal = victim[0]
-                            else:
-                                continue
+            doublemoves = []
+            for boat in p.boats:
+                moves = []
+                # weather
+                if p.curr_card == 0:
+                    if self.weather < 2:
                         move = Move()
-                        move.direction = direction
-                        move.load = load
-                        move.after = after
-                        move.steal = steal
+                        move.weather = 1
                         moves.append(move)
-            return moves
+                    if self.weather > -1:
+                        move = Move()
+                        move.weather = -1
+                        moves.append(move)
+                # movement
+                else:
+                    for (direction, load, after, steal) in \
+                        product([1,-1], *[[True, False]]*3):
+
+                        distance = (p.curr_card - 2 * load) * direction
+
+                        # boat is on board
+                        if boat.position != None:
+                            if load:
+                                # not enough points
+                                if p.curr_card < 2: continue
+                                # boat wants to load but is not at bay
+                                if boat.position + distance * (after) < 3: continue
+                            else:
+                                if after: continue
+
+                            if steal:
+                                # not moving upwards
+                                if not distance < 0: continue
+
+                                # either there is a stone or its beeing loaded
+                                if boat.stone ^ load: continue
+
+                                victim = [vboat for vboat in p.boats for p in self.players if vboat.position == boat.position + distance and vboat.stone]
+                                if victim:
+                                    # TODO: allow choosing victim
+                                    steal = victim[0]
+                                else:
+                                    continue
+                            move = Move()
+                            move.direction = direction
+                            move.load = load
+                            move.after = after
+                            move.steal = steal
+                            moves.append(move)
+                doublemoves.append(moves)
+            return doublemoves
 
     def turn(self):
         p = self.players[self.curr_player]

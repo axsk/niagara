@@ -241,7 +241,7 @@ class Game:
                 p.cards = [0,1,2,3,4,5,6]
 
         # determine winners
-        self.winners = [p for p in self.players if len(p.bank) == 2]
+        self.winners = [p for p in self.players if len(p.bank) >= 2]
 
         # prepare next round
         self.round += 1

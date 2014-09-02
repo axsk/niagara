@@ -77,7 +77,7 @@ class Game:
             self.players.append(Player(agent))
             self.players[-1].id = len(self.players)
         self.winners = []
-        self.bay = [None]*3 + [[i]*7 for i in range(3, 8)]
+        self.bay = [[]]*3 + [[i]*7 for i in range(3, 8)]
 
     def currPlayer(self):
         return self.players[self.curr_player]
@@ -282,18 +282,24 @@ class Game:
 
     def printState(self):
     # underline player if he has a jewel
-        def markjewel(str, boat):
-            return '\033[4m' + `str` + '\033[0m' if boat.jewel else `str`
-        text = ''
+        t = ['bay  ','river','load ']
         for bay in range(0,8):
-            baytext = ""
+            tt = ['','','']
             for player in self.players:
-                for boat in player.boats:
-                    baytext += markjewel(player.id, boat) if boat.position == bay else ""
-            baytext = baytext if baytext else 'o'
-            text += baytext + ' '
+                for boat in [b for b in player.boats if b.position == bay]:
+                    tt[1] += `player.id`
+                    tt[2] += `boat.jewel` if boat.jewel else ' '
+            tt[0] = `len(self.bay[bay])`
+            l = max(len(tt[0]), len(tt[1]))
+            for i in range(0,3):
+                tt[i] += ' ' * (l-len(tt[i]))
+                t[i] += tt[i] + ' ' 
         print ''
-        print text + '(~' + `self.weather` + '~)'
+        t[0] += 'R' + `self.round`
+        t[1] += `[len(p.bank) for p in self.players]` 
+        t[2] += '(~' + `self.weather` + '~)'
+        for i in range(0,3):
+            print t[i]
         print ''
 
     def secure(self):

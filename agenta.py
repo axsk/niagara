@@ -16,19 +16,19 @@ class AgentDet:
         for i in range(0,2):
             boat = me.boats[i]
             mvs = moves[i]
-            if boat.stone:
-                cmb.append(choice(filterMoves(mvs, [('direction', -1) , ('load', False)])))
+            if boat.jewel:
+                cmb.append(choice(filterMoves(mvs, [('direction', '==-1') , ('load', '==False')])))
             else:
-                f = filterMoves(mvs, [('load', True), ('direction', -1)], strict=True)
+                f = filterMoves(mvs, [('load', ''), ('direction', '==-1')], strict=True)
                 if f:
                     cmb.append(choice(f))
                 else:
-                    cmb.append(choice(filterMoves(mvs, ('direction', 1))))
+                    cmb.append(choice(filterMoves(mvs, ('direction', '==1'))))
         return cmb 
 
 def filterMoves(ms, f, strict = False):
     if isinstance(f, tuple):
-        fms = filter(lambda m: getattr(m,f[0])==f[1], ms)   
+        fms = filter(lambda m: eval('getattr(m,f[0])' + f[1]), ms)   
         return fms if fms or strict else ms
     else:
         q = [ms]

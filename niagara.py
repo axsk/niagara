@@ -27,7 +27,7 @@ class AgentHuman:
 class Boat:
     def __init__(self):
         self.position = 0
-        self.stone = False
+        self.jewel = False
 
 class Player:
     def __init__(self, agent):
@@ -38,7 +38,7 @@ class Player:
         self.curr_card = None
 
 class Move:
-    def __init__(self, card=None, buyback=0, direction=None, load=False,
+    def __init__(self, card=None, buyback=0, direction=0, load=False,
             after=False, steal=False, weather=0):
         # phase 1
         self.card = card
@@ -64,7 +64,7 @@ class Move:
 
     # let Move()==Move() be true (comparison by values)
     def __eq__(self, other):
-        return self.__str__() == other.__str__()
+        return self.__dict__ == other.__dict__
 
 class Game:
     def __init__(self, agents):
@@ -77,6 +77,7 @@ class Game:
             self.players.append(Player(agent))
             self.players[-1].id = len(self.players)
         self.winners = []
+        self.bay = [None]*3 + [[i]*7 for i in range(3, 8)]
 
     def currPlayer(self):
         return self.players[self.curr_player]
@@ -133,30 +134,37 @@ class Game:
             for (direction, load, after, steal) in \
                 product([1,-1], *[[True, False]]*3):
 
-                distance = (p.curr_card - 2 * load) * direction
+                distance = (p.curr_card - (2 if load else 0)) * direction
 
                 if load:
                     # not enough points
                     if p.curr_card < 2: continue
                     # boat wants to load but is not at bay
-                    if boat.position + distance * (after) < 3: continue
+                    loadpos = boat.position + distance * (after)
+                    if not (2 < loadpos < 8): continue
+                    loads = ['unload'] if boat.jewel else set(self.bay[loadpos])
                 else:
                     if after: continue
+                    loads = [False]
 
                 if steal:
+                    continue # TODO: REMOVE HOTFIX
                     # not moving upwards
                     if not distance < 0: continue
 
-                    # either there is a stone or its beeing loaded
-                    if boat.stone ^ load: continue
+                    # either there is a jewel or its beeing loaded
+                    if boat.jewel ^ load: continue
 
-                    vboats = [vboat for vboat in p.boats for p in self.players if vboat.position == boat.position + distance and vboat.stone]
+                    vboats = [vboat for vboat in p.boats for p in self.players if vboat.position == boat.position + distance and vboat.jewel]
                     if vboats:
                         # TODO: allow choosing victim
                         steal = vboats[0]
                     else:
                         continue
-                moves.append(Move(direction=direction, load=load, after=after, steal=steal))
+
+                for l in loads:
+                    moves.append(Move(direction=direction, load=l, after=after, steal=steal))
+
             doublemoves.append(moves)
         return doublemoves
 
@@ -177,7 +185,9 @@ class Game:
         sb = self.sunkboats(p)
         for i in range(0,move.buyback):
             sb[i].position = 0
-            if len(p.bank): p.bank.pop()
+            if len(p.bank): 
+                jew = p.bank.pop()
+                self.bay[jew].append(jew)
             print p.agent.name + " bought back"
 
         self.curr_player = (self.curr_player + 1) % len(self.players)
@@ -191,26 +201,39 @@ class Game:
         self.weather += moves[0].weather
 
         for move, boat in zip(moves, p.boats):
+            if boat.position == None: continue
             print p.agent.name + ": ", move
+
+            newpos = boat.position + move.direction * (p.curr_card - (2 if move.load else 0))
+            loadpos = newpos if move.after else boat.position
+
             if move.load:
-                boat.stone = not boat.stone
-                print p.agent.name + ( " " if boat.stone else " un" ) + "loaded a stone"
+                if move.load == 'unload':
+                    self.bay[loadpos] = boat.jewel
+                    boat.jewel = False
+                else:
+                    boat.jewel = move.load
+                    try:
+                        self.bay[loadpos].remove(move.load)
+                    except:
+                        print "bug: donated jewel"
+                print p.agent.name + " loaded " + `move.load`
 
             if move.direction:
-                boat.position += move.direction * (p.curr_card - 2 * move.load)
+                boat.position = newpos
 
                 if boat.position < 0: boat.position = 0
 
-                # add stone to bank
-                if boat.position == 0 and boat.stone:
-                    p.bank.append(boat.stone)
-                    boat.stone = False
-                    print p.agent.name + ' got a stone'
+                # add jewel to bank
+                if boat.position == 0 and boat.jewel:
+                    p.bank.append(boat.jewel)
+                    boat.jewel = False
+                    print p.agent.name + ' got a jewel'
 
             if move.steal:
-                boat.stone = move.steal.stone
-                move.steal.stone = False
-                print p.agent.name + ' stole a stone'
+                boat.jewel = move.steal.jewel
+                move.steal.jewel = False
+                print p.agent.name + ' stole a jewel'
 
         p.cards.remove(p.curr_card)
         self.curr_player = (self.curr_player + 1) % len(self.players)
@@ -240,7 +263,9 @@ class Game:
                 # sink boats
                 if boat.position > 7:
                     boat.position = None
-                    boat.stone = False
+                    if boat.jewel: 
+                        self.bay[boat.jewel].append(boat.jewel) 
+                        boat.jewel = False
                     print p.agent.name + " fell down"
 
         # return cards
@@ -256,15 +281,15 @@ class Game:
         self.curr_player = self.ring()
 
     def printState(self):
-    # underline player if he has a stone
-        def markstone(str, boat):
-            return '\033[4m' + `str` + '\033[0m' if boat.stone else `str`
+    # underline player if he has a jewel
+        def markjewel(str, boat):
+            return '\033[4m' + `str` + '\033[0m' if boat.jewel else `str`
         text = ''
         for bay in range(0,8):
             baytext = ""
             for player in self.players:
                 for boat in player.boats:
-                    baytext += markstone(player.id, boat) if boat.position == bay else ""
+                    baytext += markjewel(player.id, boat) if boat.position == bay else ""
             baytext = baytext if baytext else 'o'
             text += baytext + ' '
         print ''

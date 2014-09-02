@@ -18,5 +18,5 @@ for (a,b) in combinations(agents,2):
         rounds += game.round
     print ""
     print "result after " + `repeats` + " runs:"
-    print a.name + " vs " + b.name + ": " + `wins/repeats`
+    print a.name + " vs " + b.name + ": " + `float(wins)/repeats`
     print "average rounds: " + `rounds/repeats`

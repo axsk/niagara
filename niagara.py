@@ -93,7 +93,7 @@ class Game:
                     moves.append(Move(card=c))
                     if len(p.bank):
                         moves.append(Move(card=c, buyback=1))
-                elif sunkboats == 2:
+                elif nsb == 2:
                     moves.append(Move(card=c, buyback=1))
                     if len(p.bank):
                         moves.append(Move(card=c, buyback=2))

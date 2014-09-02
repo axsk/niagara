@@ -13,7 +13,7 @@ class AgentDet:
         if g.phase == 2:
             for i in range(0,2):
                 boat = me.boats[i]
-                mvs = moves[0]
+                mvs = moves[i]
                 if boat.stone:
                     cmb.append(choice(filterMoves(mvs, [('direction', -1) , ('load', False)])))
                 else:

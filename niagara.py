@@ -114,6 +114,9 @@ class Game:
                         move = Move()
                         move.weather = -1
                         moves.append(move)
+                    doublemoves.append(moves)
+                    doublemoves.append(moves)
+                    break
                 # movement
                 else:
                     for (direction, load, after, steal) in \
@@ -150,6 +153,8 @@ class Game:
                             move.after = after
                             move.steal = steal
                             moves.append(move)
+                        else:
+                            moves.append(Move())
                 doublemoves.append(moves)
             return doublemoves
 

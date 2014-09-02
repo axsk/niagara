@@ -34,20 +34,21 @@ class Player:
         self.agent = agent
         self.bank = []
         self.boats = (Boat(), Boat())
-        self.cards = [0,1,2,3,4,5,6] # 0 is weather
+        self.cards = [0, 1, 2, 3, 4, 5, 6]  # 0 is weather
         self.curr_card = None
 
 class Move:
-    def __init__(self, card=None, buyback=0):
+    def __init__(self, card=None, buyback=0, direction=None, load=False,
+            after=False, steal=False, weather=0):
         # phase 1
         self.card = card
         self.buyback = buyback
         # phase 2
-        self.direction = None
-        self.load = False
-        self.after = False
-        self.steal = False
-        self.weather = 0
+        self.direction = direction
+        self.load = load
+        self.after = after
+        self.steal = steal
+        self.weather = weather
 
     def __str__(self):
         if self.card != None:
@@ -77,134 +78,141 @@ class Game:
             self.players[-1].id = len(self.players)
         self.winners = []
 
+    def currPlayer(self):
+        return self.players[self.curr_player]
+
     def sunkboats(self, player):
         return [boat for boat in player.boats if boat.position == None]
 
     def possibleMoves(self):
-        p = self.players[self.curr_player]
-        # phase 1
         if self.phase == 1:
-            moves = []
-            nsb = len(self.sunkboats(p))
-            for c in p.cards:
-                if nsb == 0:
-                    moves.append(Move(card=c))
-                elif nsb == 1:
-                    moves.append(Move(card=c))
-                    if len(p.bank):
-                        moves.append(Move(card=c, buyback=1))
-                elif nsb == 2:
-                    moves.append(Move(card=c, buyback=1))
-                    if len(p.bank):
-                        moves.append(Move(card=c, buyback=2))
-            return moves
-
-        # phase 2
+            return self.possMoves1()
         else:
-            doublemoves = []
-            for boat in p.boats:
-                moves = []
-                # weather
-                if p.curr_card == 0:
-                    if self.weather < 2:
-                        move = Move()
-                        move.weather = 1
-                        moves.append(move)
-                    if self.weather > -1:
-                        move = Move()
-                        move.weather = -1
-                        moves.append(move)
-                    doublemoves.append(moves)
-                    doublemoves.append(moves)
-                    break
-                # movement
+            return self.possMoves2()
+
+    def possMoves1(self):
+        p = self.currPlayer()
+        moves = []
+        nsb = len(self.sunkboats(p))
+        for c in p.cards:
+            if nsb == 0:
+                moves.append(Move(card=c))
+            elif nsb == 1:
+                moves.append(Move(card=c))
+                if len(p.bank):
+                    moves.append(Move(card=c, buyback=1))
+            elif nsb == 2:
+                moves.append(Move(card=c, buyback=1))
+                if len(p.bank):
+                    moves.append(Move(card=c, buyback=2))
+        return moves
+    
+    def possMoves2(self):
+        p = self.currPlayer()
+        doublemoves = []
+        for boat in p.boats:
+            moves = []
+            # weather
+            if p.curr_card == 0:
+                if self.weather < 2:
+                    move = Move()
+                    move.weather = 1
+                    moves.append(move)
+                if self.weather > -1:
+                    move = Move()
+                    move.weather = -1
+                    moves.append(move)
+                return [moves, moves]
+
+            # boat fell down
+            if boat.position == None:
+                doublemoves.append([Move()])
+                continue
+
+            # movement
+            for (direction, load, after, steal) in \
+                product([1,-1], *[[True, False]]*3):
+
+                distance = (p.curr_card - 2 * load) * direction
+
+                if load:
+                    # not enough points
+                    if p.curr_card < 2: continue
+                    # boat wants to load but is not at bay
+                    if boat.position + distance * (after) < 3: continue
                 else:
-                    for (direction, load, after, steal) in \
-                        product([1,-1], *[[True, False]]*3):
+                    if after: continue
 
-                        distance = (p.curr_card - 2 * load) * direction
+                if steal:
+                    # not moving upwards
+                    if not distance < 0: continue
 
-                        # boat is on board
-                        if boat.position != None:
-                            if load:
-                                # not enough points
-                                if p.curr_card < 2: continue
-                                # boat wants to load but is not at bay
-                                if boat.position + distance * (after) < 3: continue
-                            else:
-                                if after: continue
+                    # either there is a stone or its beeing loaded
+                    if boat.stone ^ load: continue
 
-                            if steal:
-                                # not moving upwards
-                                if not distance < 0: continue
-
-                                # either there is a stone or its beeing loaded
-                                if boat.stone ^ load: continue
-
-                                victim = [vboat for vboat in p.boats for p in self.players if vboat.position == boat.position + distance and vboat.stone]
-                                if victim:
-                                    # TODO: allow choosing victim
-                                    steal = victim[0]
-                                else:
-                                    continue
-                            move = Move()
-                            move.direction = direction
-                            move.load = load
-                            move.after = after
-                            move.steal = steal
-                            moves.append(move)
-                        else:
-                            moves.append(Move())
-                doublemoves.append(moves)
-            return doublemoves
+                    vboats = [vboat for vboat in p.boats for p in self.players if vboat.position == boat.position + distance and vboat.stone]
+                    if vboats:
+                        # TODO: allow choosing victim
+                        steal = vboats[0]
+                    else:
+                        continue
+                moves.append(Move(direction=direction, load=load, after=after, steal=steal))
+            doublemoves.append(moves)
+        return doublemoves
 
     def turn(self):
-        p = self.players[self.curr_player]
-        move = p.agent.getMove(self.secure())
-        if type(move) == list:
-            for mv, pos in zip(move, self.possibleMoves()):
-                if not (mv in pos or mv in move): 
-                    raise Exception('invalid move')
+        if self.phase == 1:
+            self.turn1()
         else:
-            if not move in self.possibleMoves():
-                raise Exception('invalid move')
+            self.turn2()
+
+    def turn1(self):
+        p = self.currPlayer()
+        move = p.agent.getMove1(self.secure())
+        if not move in self.possMoves1(): raise Exception('invalid move')
 
         print p.agent.name + ": ", move
 
-        if self.phase == 1:
-            p.curr_card = move.card
-            sb = self.sunkboats(p)
-            for i in range(0,move.buyback):
-                sb[i].position = 0
-                if len(p.bank): p.bank.pop()
-                print p.agent.name + " bought back"
+        p.curr_card = move.card
+        sb = self.sunkboats(p)
+        for i in range(0,move.buyback):
+            sb[i].position = 0
+            if len(p.bank): p.bank.pop()
+            print p.agent.name + " bought back"
 
-        else:
-            moves = move
-            self.weather += move[0].weather
-            p.cards.remove(p.curr_card)
-            for move, boat in zip(moves, p.boats):
-                if move.load:
-                    boat.stone = not boat.stone
-                    print p.agent.name + ( " " if boat.stone else " un" ) + "loaded a stone"
+        self.curr_player = (self.curr_player + 1) % len(self.players)
 
-                if move.direction:
-                    boat.position += move.direction * (p.curr_card - 2 * move.load)
+    def turn2(self):
+        p = self.currPlayer()
+        moves = p.agent.getMove2(self.secure())
+        for move, poss in zip(moves, self.possMoves2()):
+            if not move in poss: raise('invalid move')
 
-                    if boat.position < 0: boat.position = 0
+        self.weather += moves[0].weather
 
-                    # add stone to bank
-                    if boat.position == 0 and boat.stone:
-                        p.bank.append(boat.stone)
-                        boat.stone = False
-                        print p.agent.name + ' got a stone'
+        for move, boat in zip(moves, p.boats):
+            print p.agent.name + ": ", move
+            if move.load:
+                boat.stone = not boat.stone
+                print p.agent.name + ( " " if boat.stone else " un" ) + "loaded a stone"
 
-                if move.steal:
-                    boat.stone = move.steal.stone
-                    move.steal.stone = False
-                    print p.agent.name + ' stole a stone'
+            if move.direction:
+                boat.position += move.direction * (p.curr_card - 2 * move.load)
 
+                if boat.position < 0: boat.position = 0
 
+                # add stone to bank
+                if boat.position == 0 and boat.stone:
+                    p.bank.append(boat.stone)
+                    boat.stone = False
+                    print p.agent.name + ' got a stone'
+
+            if move.steal:
+                boat.stone = move.steal.stone
+                move.steal.stone = False
+                print p.agent.name + ' stole a stone'
+
+        p.cards.remove(p.curr_card)
         self.curr_player = (self.curr_player + 1) % len(self.players)
 
     def ring(self):
@@ -238,7 +246,7 @@ class Game:
         # return cards
         if self.round % 7 == 0:
             for p in self.players:
-                p.cards = [0,1,2,3,4,5,6]
+                p.cards = [0, 1, 2, 3, 4, 5, 6]
 
         # determine winners
         self.winners = [p.agent for p in self.players if len(p.bank) >= 2]

@@ -6,24 +6,25 @@ class AgentDet:
     def __init__(self):
         self.name = "Det"
 
-    def getMove(self, g):
+    def getMove1(self, g):
+        return choice(g.possibleMoves())
+
+    def getMove2(self, g):
         moves = g.possibleMoves()
         me  = g.players[g.curr_player]
         cmb = []
-        if g.phase == 2:
-            for i in range(0,2):
-                boat = me.boats[i]
-                mvs = moves[i]
-                if boat.stone:
-                    cmb.append(choice(filterMoves(mvs, [('direction', -1) , ('load', False)])))
+        for i in range(0,2):
+            boat = me.boats[i]
+            mvs = moves[i]
+            if boat.stone:
+                cmb.append(choice(filterMoves(mvs, [('direction', -1) , ('load', False)])))
+            else:
+                f = filterMoves(mvs, [('load', True), ('direction', -1)], strict=True)
+                if f:
+                    cmb.append(choice(f))
                 else:
-                    f = filterMoves(mvs, [('load', True), ('direction', -1)], strict=True)
-                    if f:
-                        cmb.append(choice(f))
-                    else:
-                        cmb.append(choice(filterMoves(mvs, ('direction', 1))))
-            return cmb 
-        return choice(g.possibleMoves())
+                    cmb.append(choice(filterMoves(mvs, ('direction', 1))))
+        return cmb 
 
 def filterMoves(ms, f, strict = False):
     if isinstance(f, tuple):

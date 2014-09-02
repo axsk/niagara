@@ -5,7 +5,7 @@ from itertools import combinations
 agents = [AgentDet(), AgentDet()]
 agents[0].name = "p1"
 agents[1].name = "p2"
-repeats = 1000
+repeats = 10
 
 for (a,b) in combinations(agents,2):
     wins = 0

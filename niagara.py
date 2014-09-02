@@ -255,8 +255,8 @@ class Game:
         for bay in range(0,8):
             baytext = ""
             for player in self.players:
-                boat = player.boats[0]
-                baytext += markstone(player.id, boat) if boat.position == bay else ""
+                for boat in player.boats:
+                    baytext += markstone(player.id, boat) if boat.position == bay else ""
             baytext = baytext if baytext else 'o'
             text += baytext + ' '
         print ''

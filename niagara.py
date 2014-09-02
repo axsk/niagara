@@ -229,7 +229,7 @@ class Game:
 
         # compute flow
         moves = [p.curr_card for p in self.players if p.curr_card]
-        flow = min(moves) if moves else 0 + self.weather
+        flow = (min(moves) if moves else 0) + self.weather
         flow = max(flow, 0)
         print "flowing " + `flow`
 

@@ -227,13 +227,13 @@ class Game:
 
         # move boats
         for p in self.players:
-            boat = p.boats[0]
-            if boat.position: boat.position += flow
-            # sink boats
-            if boat.position > 7:
-                boat.position = None
-                boat.stone = False
-                print p.agent.name + " fell down"
+            for boat in p.boats:
+                if boat.position: boat.position += flow
+                # sink boats
+                if boat.position > 7:
+                    boat.position = None
+                    boat.stone = False
+                    print p.agent.name + " fell down"
 
         # return cards
         if self.round % 7 == 0:

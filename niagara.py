@@ -241,7 +241,7 @@ class Game:
                 p.cards = [0,1,2,3,4,5,6]
 
         # determine winners
-        self.winners = [p for p in self.players if len(p.bank) >= 2]
+        self.winners = [p.agent for p in self.players if len(p.bank) >= 2]
 
         # prepare next round
         self.round += 1
@@ -282,5 +282,5 @@ class Game:
                 types, value, tb = sys.exc_info()
                 traceback.print_exc()
                 pdb.post_mortem(tb)
-        print self.winners[0].agent.name + " won after " + `self.round` + " rounds"
+        print self.winners[0].name + " won after " + `self.round` + " rounds"
         return self

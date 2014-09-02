@@ -3,8 +3,9 @@ from agenta import AgentDet
 from itertools import combinations
 
 agents = [AgentDet(), AgentDet()]
-
-repeats = 100
+agents[0].name = "p1"
+agents[1].name = "p2"
+repeats = 1000
 
 for (a,b) in combinations(agents,2):
     wins = 0
@@ -18,5 +19,5 @@ for (a,b) in combinations(agents,2):
         rounds += game.round
     print ""
     print "result after " + `repeats` + " runs:"
-    print a.name + " vs " + b.name + ": " + `wins/repeats`
+    print a.name + " vs " + b.name + ": " + `float(wins)/repeats`
     print "average rounds: " + `rounds/repeats`

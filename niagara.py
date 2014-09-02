@@ -93,7 +93,7 @@ class Game:
                     moves.append(Move(card=c))
                     if len(p.bank):
                         moves.append(Move(card=c, buyback=1))
-                elif sunkboats == 2:
+                elif nsb == 2:
                     moves.append(Move(card=c, buyback=1))
                     if len(p.bank):
                         moves.append(Move(card=c, buyback=2))
@@ -227,13 +227,13 @@ class Game:
 
         # move boats
         for p in self.players:
-            boat = p.boats[0]
-            if boat.position: boat.position += flow
-            # sink boats
-            if boat.position > 7:
-                boat.position = None
-                boat.stone = False
-                print p.agent.name + " fell down"
+            for boat in p.boats:
+                if boat.position: boat.position += flow
+                # sink boats
+                if boat.position > 7:
+                    boat.position = None
+                    boat.stone = False
+                    print p.agent.name + " fell down"
 
         # return cards
         if self.round % 7 == 0:
@@ -241,7 +241,7 @@ class Game:
                 p.cards = [0,1,2,3,4,5,6]
 
         # determine winners
-        self.winners = [p for p in self.players if len(p.bank) == 2]
+        self.winners = [p.agent for p in self.players if len(p.bank) >= 2]
 
         # prepare next round
         self.round += 1
@@ -282,5 +282,5 @@ class Game:
                 types, value, tb = sys.exc_info()
                 traceback.print_exc()
                 pdb.post_mortem(tb)
-        print self.winners[0].agent.name + " won after " + `self.round` + " rounds"
+        print self.winners[0].name + " won after " + `self.round` + " rounds"
         return self

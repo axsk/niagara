@@ -274,11 +274,20 @@ class Game:
                 p.cards = [0, 1, 2, 3, 4, 5, 6]
 
         # determine winners
-        self.winners = [p.agent for p in self.players if len(p.bank) >= 2]
+        self.winners = self.getWinners()
 
         # prepare next round
         self.round += 1
         self.curr_player = self.ring()
+
+    def getWinners(self):
+        winners = []
+        for p in self.players:
+            if (any(p.bank.count(i)==4 for i in [3,4,5,6,7])
+                or set([3,4,5,6,7]).issubset(set(p.bank))
+                or len(p.bank)>=7):
+                winners.append(p.agent)
+        return winners
 
     def printState(self):
     # underline player if he has a jewel
@@ -321,5 +330,6 @@ class Game:
                 types, value, tb = sys.exc_info()
                 traceback.print_exc()
                 pdb.post_mortem(tb)
-        print self.winners[0].name + " won after " + `self.round` + " rounds"
+        for winner in self.winners:
+            print winner.name + " won after " + `self.round` + " rounds"
         return self

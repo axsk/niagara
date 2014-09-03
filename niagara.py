@@ -312,13 +312,7 @@ class Game:
         print ''
 
     def secure(self):
-        copy = deepcopy(self)
-        for p in copy.players: pass
-            # TODO: here we want to remove the curr card to avoid cheating
-            # but right now it has to be known for the current player to show possible moves
-            # p.curr_card = None
-            # p.agent = None
-        return copy
+        return self
 
     def run(self):
         while not self.winners:

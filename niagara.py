@@ -28,6 +28,7 @@ class Boat:
     def __init__(self):
         self.position = 0
         self.jewel = False
+        self.branch = False
 
 class Player:
     def __init__(self, agent):
@@ -39,7 +40,7 @@ class Player:
 
 class Move:
     def __init__(self, card=None, buyback=0, direction=0, load=False,
-            after=False, steal=False, weather=0):
+            after=False, steal=False, weather=0, branch=False):
         # phase 1
         self.card = card
         self.buyback = buyback
@@ -49,6 +50,7 @@ class Move:
         self.after = after
         self.steal = steal
         self.weather = weather
+        self.branch = branch
 
     def __str__(self):
         if self.card != None:
@@ -162,8 +164,13 @@ class Game:
                     else:
                         continue
 
-                for l in loads:
-                    moves.append(Move(direction=direction, load=l, after=after, steal=steal))
+                if boat.position < 6 and boat.position+distance >= 6:
+                    branches = [1, 2]
+                else:
+                    branches = [0]
+
+                for (l, b) in product(loads, branches):
+                    moves.append(Move(direction=direction, load=l, after=after, steal=steal, branch=b))
 
             doublemoves.append(moves)
         return doublemoves
@@ -235,6 +242,7 @@ class Game:
                 move.steal.jewel = False
                 print p.agent.name + ' stole a jewel'
 
+            boat.branch = move.branch
         p.cards.remove(p.curr_card)
         self.curr_player = (self.curr_player + 1) % len(self.players)
 
@@ -260,6 +268,10 @@ class Game:
         for p in self.players:
             for boat in p.boats:
                 if boat.position: boat.position += flow
+                # correction for branches
+                if boat.position > 5:
+                    inact = (boat.branch - self.round) % 2
+                    boat.position -= (boat.position - 5 + inact) // 2
                 # sink boats
                 if boat.position > 7:
                     boat.position = None

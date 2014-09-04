@@ -1,8 +1,8 @@
-from niagara import Game, Player, AgentRandom
+from niagara import Game, Player, AgentRandom, AgentHuman
 from agenta import AgentDet
 from itertools import combinations
 
-agents = [AgentDet(), AgentDet()]
+agents = [AgentHuman(), AgentRandom()]
 agents[0].name = "p1"
 agents[1].name = "p2"
 repeats = 10

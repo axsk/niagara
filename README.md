@@ -2,6 +2,7 @@ niagara
 =======
 
 Todos:
-- update random and human angents
+- fix unload bugs
+- fix bug when moving over waterfall and getting corrected by correction
 - allow choosing victim for stealing
 - implement secure() 

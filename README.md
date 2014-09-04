@@ -2,6 +2,6 @@ niagara
 =======
 
 Todos:
-- fix startboats
+- update random and human angents
 - allow choosing victim for stealing
 - implement secure() 

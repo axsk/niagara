@@ -206,6 +206,7 @@ class Game:
             if not move in poss: raise('invalid move')
 
         self.weather += moves[0].weather
+        launched = 0
 
         for move, boat in zip(moves, p.boats):
             if boat.position == None: continue
@@ -213,6 +214,10 @@ class Game:
 
             newpos = boat.position + move.direction * (p.curr_card - (2 if move.load else 0))
             loadpos = newpos if move.after else boat.position
+
+            if boat.position == 0 and newpos > 0:
+                if launched: continue
+                launched = 1
 
             if move.load:
                 if move.load == 'unload':

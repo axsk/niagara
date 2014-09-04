@@ -200,8 +200,8 @@ class Game:
         for i in range(0,move.buyback):
             sb[i].position = 0
             if len(p.bank): 
-                jew = p.bank.pop()
-                self.bay[jew].append(jew)
+                jewel = p.bank.pop()
+                self.bay[jewel].append(jewel)
             print p.agent.name + " bought back"
 
         self.curr_player = (self.curr_player + 1) % len(self.players)
@@ -228,7 +228,7 @@ class Game:
 
             if move.load:
                 if move.load == 'unload':
-                    self.bay[loadpos] = boat.jewel
+                    self.bay[loadpos].append(boat.jewel)
                     boat.jewel = False
                 else:
                     boat.jewel = move.load

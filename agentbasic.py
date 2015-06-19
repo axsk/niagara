@@ -10,7 +10,7 @@ class AgentHuman:
         for i, m in enumerate(moves):
             print "", i, m
         try:
-            return moves[int(raw_input('^'))]
+            return moves[int(raw_input('^ '))]
         except KeyboardInterrupt:
             raise
         except:
@@ -21,9 +21,9 @@ class AgentHuman:
         poss = game.possibleMoves()
         return [self.askMoves(poss[0]), self.askMoves(poss[1])]
 
-class AgentDet:
+class AgentRule:
     def __init__(self):
-        self.name = "Det"
+        self.name = "AgentRule"
 
     def getMove1(self, g):
         return choice(g.possibleMoves())
